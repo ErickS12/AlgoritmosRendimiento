@@ -1,0 +1,68 @@
+# Ejecutables compilados
+secuencial
+OMP
+pthread
+MPI
+matriz_opencl
+main
+benchmark_gpu
+
+# Archivos de objetos compilados
+*.o
+*.obj
+
+# Archivos de salida
+*.out
+*.a
+*.so
+*.dll
+*.dylib
+
+# Directorios de compilación
+build/
+dist/
+bin/
+obj/
+
+# IDE y editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.vscode
+
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+
+# Archivos generados por compiladores
+*.d
+*.i
+*.s
+
+# Binarios específicos con sufijo _run
+*_run
+
+# Archivos de log
+*.log
+
+# Archivos de datos/resultados (si se generan)
+*.csv
+*.dat
+*.txt
+results/
+output/
+
+# Configuración de sistema
+.clang_complete
+compile_commands.json
+
+# Archivos de benchmark
+*.benchmark
+
+# Directorios de Windows
+Thumbs.db
+.Thumbs.db
