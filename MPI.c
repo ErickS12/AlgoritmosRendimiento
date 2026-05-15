@@ -5,7 +5,7 @@
 #include <time.h> // Necesario para time(NULL)
 
 // Función estándar de multiplicación local
-void multiply_block(int size, double *A, double *B, double *C) {
+void multiply_block(int size, int *A, int *B, int *C) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             for (int k = 0; k < size; k++) {
@@ -60,15 +60,15 @@ int main(int argc, char* argv[]) {
 
     // Asignar memoria para los bloques LOCALES (contiguos en memoria)
     int block_elements = blockSize * blockSize;
-    double *local_A = (double*)malloc(block_elements * sizeof(double));
-    double *local_B = (double*)malloc(block_elements * sizeof(double));
-    double *local_C = (double*)calloc(block_elements, sizeof(double));
-    double *temp_A  = (double*)malloc(block_elements * sizeof(double)); // Buffer para recibir A
+    int *local_A = (int*)malloc(block_elements * sizeof(int));
+    int *local_B = (int*)malloc(block_elements * sizeof(int));
+    int *local_C = (int*)calloc(block_elements, sizeof(int));
+    int *temp_A  = (int*)malloc(block_elements * sizeof(int)); // Buffer para recibir A
 
-    // Inicializar bloques con datos aleatorios entre 1000.0 y 2000.0
+    // Inicializar bloques con datos aleatorios entre 1000 y 2000
     for (int i = 0; i < block_elements; i++) {
-        local_A[i] = 1000.0 + ((double)rand() / RAND_MAX) * 1000.0;
-        local_B[i] = 1000.0 + ((double)rand() / RAND_MAX) * 1000.0;
+        local_A[i] = 1000 + rand() % 1001;
+        local_B[i] = 1000 + rand() % 1001;
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -89,14 +89,14 @@ int main(int argc, char* argv[]) {
         }
 
         // b) Difundir el bloque de A a través del comunicador de fila
-        MPI_Bcast(temp_A, block_elements, MPI_DOUBLE, bcast_root, row_comm);
+        MPI_Bcast(temp_A, block_elements, MPI_INT, bcast_root, row_comm);
 
         // c) Multiplicar el bloque recibido de A por el bloque local de B
         multiply_block(blockSize, temp_A, local_B, local_C);
 
         // d) Rotar el bloque local de B hacia el proceso de arriba
         // MPI_Sendrecv_replace envía el buffer y lo sobrescribe con lo que recibe
-        MPI_Sendrecv_replace(local_B, block_elements, MPI_DOUBLE, 
+        MPI_Sendrecv_replace(local_B, block_elements, MPI_INT, 
                              dest, 0, source, 0, grid_comm, MPI_STATUS_IGNORE);
     }
 
@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
     double end_time = MPI_Wtime();
 
     if (rank == 0) {
+        printf("Tipo de dato usado: int\n");
         printf("N=%d, Procesos=%d, Tiempo MPI: %f segundos\n", N, num_procs, end_time - start_time);
     }
 

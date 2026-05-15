@@ -11,14 +11,14 @@ typedef struct {
     int N;              // Tamaño de la matriz (N x N)
     int q;              // sqrt(num_hilos)
     int blockSize;      // N / q
-    double **A, **B, **C;
+    int **A, **B, **C;
 } FoxData;
 
 pthread_barrier_t barrier; // Barrera de sincronización
 
 // Función para multiplicar submatrices (bloques)
 void multiply_block(int size, int row_offset, int col_offset, int k_offset, 
-                    double **A, double **B, double **C) {
+                    int **A, int **B, int **C) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             for (int k = 0; k < size; k++) {
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     int N = (argc > 1) ? atoi(argv[1]) : 1024;
     
     // 2. Leer num_threads desde la terminal (argv[2]). Si no se pone, por defecto es 4.
-    int num_threads = (argc > 2) ? atoi(argv[2]) : 9; 
+    int num_threads = (argc > 2) ? atoi(argv[2]) : 4; 
 
     // Verificación de seguridad
     int q = (int)sqrt(num_threads);
@@ -72,19 +72,19 @@ int main(int argc, char* argv[]) {
     int blockSize = N / q;
 
     // Reserva de memoria para matrices A, B y C
-    double **A = (double**)malloc(N * sizeof(double*));
-    double **B = (double**)malloc(N * sizeof(double*));
-    double **C = (double**)malloc(N * sizeof(double*));
+    int **A = (int**)malloc(N * sizeof(int*));
+    int **B = (int**)malloc(N * sizeof(int*));
+    int **C = (int**)malloc(N * sizeof(int*));
     
     for (int i = 0; i < N; i++) {
-        A[i] = (double*)malloc(N * sizeof(double));
-        B[i] = (double*)malloc(N * sizeof(double));
-        C[i] = (double*)calloc(N, sizeof(double)); // Inicializar en 0
+        A[i] = (int*)malloc(N * sizeof(int));
+        B[i] = (int*)malloc(N * sizeof(int));
+        C[i] = (int*)calloc(N, sizeof(int)); // Inicializar en 0
         
         for (int j = 0; j < N; j++) {
-            // Generar números double aleatorios entre 1000.0 y 2000.0
-            A[i][j] = 1000.0 + ((double)rand() / RAND_MAX) * 1000.0;
-            B[i][j] = 1000.0 + ((double)rand() / RAND_MAX) * 1000.0;
+            // Generar números enteros aleatorios entre 1000 y 2000
+            A[i][j] = 1000 + rand() % 1001;
+            B[i][j] = 1000 + rand() % 1001;
         }
     }
 
@@ -120,6 +120,7 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
 
+    printf("Tipo de dato usado: int\n");
     printf("N=%d, Hilos=%d, Tiempo: %f segundos\n", N, num_threads, time_taken);
 
     // Limpieza

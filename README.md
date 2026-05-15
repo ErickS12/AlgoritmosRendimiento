@@ -12,7 +12,7 @@ Este proyecto implementa la multiplicación de dos matrices cuadradas (N×N) usa
 - **MPI**: Paralelismo distribuido con Message Passing Interface
 - **OpenCL**: Aceleración GPU
 
-Cada implementación mide el tiempo de ejecución para comparar eficiencia y escalabilidad.
+Cada implementación mide el tiempo de ejecución para comparar eficiencia y escalabilidad. En esta versión, las matrices y acumuladores de MPI, OpenMP, Pthreads y la versión secuencial se modificaron de double a int.
 
 ## 🏗️ Estructura del Proyecto
 
@@ -111,7 +111,7 @@ mpirun -np 9 ./MPI 1024
 ## 📈 Notas sobre Rendimiento
 
 - Los algoritmos están optimizados para **cache locality** usando arreglos 1D
-- Las matrices se generan con valores aleatorios entre 1000.0 y 2000.0
+- Las matrices se generan con valores aleatorios enteros entre 1000 y 2000
 - El tiempo se mide usando `clock_gettime(CLOCK_MONOTONIC)` para máxima precisión
 - Para obtener resultados confiables, ejecutar múltiples veces y promediar
 

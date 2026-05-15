@@ -6,7 +6,7 @@
 
 // Función clásica para multiplicar los bloques (submatrices)
 void multiply_block(int size, int row_offset, int col_offset, int k_offset, 
-                    double **A, double **B, double **C) {
+                    int **A, int **B, int **C) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             for (int k = 0; k < size; k++) {
@@ -40,17 +40,17 @@ int main(int argc, char* argv[]) {
     int blockSize = N / q;
 
     // 1. Reserva de memoria dinámica para matrices A, B y C
-    double **A = (double**)malloc(N * sizeof(double*));
-    double **B = (double**)malloc(N * sizeof(double*));
-    double **C = (double**)malloc(N * sizeof(double*));
+    int **A = (int**)malloc(N * sizeof(int*));
+    int **B = (int**)malloc(N * sizeof(int*));
+    int **C = (int**)malloc(N * sizeof(int*));
     for (int i = 0; i < N; i++) {
-        A[i] = (double*)malloc(N * sizeof(double));
-        B[i] = (double*)malloc(N * sizeof(double));
-        C[i] = (double*)calloc(N, sizeof(double)); // calloc inicializa en 0
+        A[i] = (int*)malloc(N * sizeof(int));
+        B[i] = (int*)malloc(N * sizeof(int));
+        C[i] = (int*)calloc(N, sizeof(int)); // calloc inicializa en 0
         for (int j = 0; j < N; j++) {
-            // Generar números double aleatorios entre 1000.0 y 2000.0
-            A[i][j] = 1000.0 + ((double)rand() / RAND_MAX) * 1000.0;
-            B[i][j] = 1000.0 + ((double)rand() / RAND_MAX) * 1000.0;
+            // Generar números enteros aleatorios entre 1000 y 2000
+            A[i][j] = 1000 + rand() % 1001;
+            B[i][j] = 1000 + rand() % 1001;
         }
     }
 
@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
     double end_time = omp_get_wtime();
     double time_taken = end_time - start_time;
 
+    printf("Tipo de dato usado: int\n");
     printf("N=%d, Hilos=%d, Tiempo OpenMP: %f segundos\n", N, num_threads, time_taken);
 
     // Liberar memoria (importante para tamaños grandes como N=8192)
