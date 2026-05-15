@@ -10,14 +10,14 @@ int main(int argc, char *argv[]) {
     int N = (argc > 1) ? atoi(argv[1]) : 1024;
     
     // Reserva de memoria dinámica (arreglo 1D contiguo para mejorar la memoria caché)
-    int *A = (int *)malloc(N * N * sizeof(int));
-    int *B = (int *)malloc(N * N * sizeof(int));
-    int *C = (int *)calloc(N * N, sizeof(int)); // calloc inicializa en 0
+    float *A = (float *)malloc(N * N * sizeof(float));
+    float *B = (float *)malloc(N * N * sizeof(float));
+    float *C = (float *)calloc(N * N, sizeof(float)); // calloc inicializa en 0
     
-    // Llenar matrices con números aleatorios entre 1000 y 2000
+    // Llenar matrices con números aleatorios entre 1000.0 y 2000.0
     for (int i = 0; i < N * N; i++) {
-        A[i] = 1000 + rand() % 1001;
-        B[i] = 1000 + rand() % 1001;
+        A[i] = 1000.0f + ((float)rand() / (float)RAND_MAX) * 1000.0f;
+        B[i] = 1000.0f + ((float)rand() / (float)RAND_MAX) * 1000.0f;
     }
     
     // Configurar e iniciar el reloj
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     // --- ALGORITMO SECUENCIAL CLÁSICO (1 Core, 1 Hilo) ---
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            int sum = 0; // Variable temporal para acelerar el cálculo
+            float sum = 0.0f; // Variable temporal para acelerar el cálculo
             for (int k = 0; k < N; k++) {
                 // Notación 1D: Fila i * Ancho N + Columna actual
                 sum += A[i * N + k] * B[k * N + j];
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     
-    printf("Tipo de dato usado: int\n");
+    printf("Tipo de dato usado: float\n");
     printf("N=%d, Tiempo Secuencial (1 Core): %f segundos\n", N, time_taken);
     
     // Limpiar la memoria RAM

@@ -11,14 +11,14 @@ typedef struct {
     int N;              // Tamaño de la matriz (N x N)
     int q;              // sqrt(num_hilos)
     int blockSize;      // N / q
-    int **A, **B, **C;
+    float **A, **B, **C;
 } FoxData;
 
 pthread_barrier_t barrier; // Barrera de sincronización
 
 // Función para multiplicar submatrices (bloques)
 void multiply_block(int size, int row_offset, int col_offset, int k_offset, 
-                    int **A, int **B, int **C) {
+                    float **A, float **B, float **C) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             for (int k = 0; k < size; k++) {
@@ -72,19 +72,19 @@ int main(int argc, char* argv[]) {
     int blockSize = N / q;
 
     // Reserva de memoria para matrices A, B y C
-    int **A = (int**)malloc(N * sizeof(int*));
-    int **B = (int**)malloc(N * sizeof(int*));
-    int **C = (int**)malloc(N * sizeof(int*));
+    float **A = (float**)malloc(N * sizeof(float*));
+    float **B = (float**)malloc(N * sizeof(float*));
+    float **C = (float**)malloc(N * sizeof(float*));
     
     for (int i = 0; i < N; i++) {
-        A[i] = (int*)malloc(N * sizeof(int));
-        B[i] = (int*)malloc(N * sizeof(int));
-        C[i] = (int*)calloc(N, sizeof(int)); // Inicializar en 0
+        A[i] = (float*)malloc(N * sizeof(float));
+        B[i] = (float*)malloc(N * sizeof(float));
+        C[i] = (float*)calloc(N, sizeof(float)); // Inicializar en 0
         
         for (int j = 0; j < N; j++) {
-            // Generar números enteros aleatorios entre 1000 y 2000
-            A[i][j] = 1000 + rand() % 1001;
-            B[i][j] = 1000 + rand() % 1001;
+            // Generar números float aleatorios entre 1000.0 y 2000.0
+            A[i][j] = 1000.0f + ((float)rand() / (float)RAND_MAX) * 1000.0f;
+            B[i][j] = 1000.0f + ((float)rand() / (float)RAND_MAX) * 1000.0f;
         }
     }
 
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
 
-    printf("Tipo de dato usado: int\n");
+    printf("Tipo de dato usado: float\n");
     printf("N=%d, Hilos=%d, Tiempo: %f segundos\n", N, num_threads, time_taken);
 
     // Limpieza
