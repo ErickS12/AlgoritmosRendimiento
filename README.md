@@ -30,63 +30,141 @@ Cada implementación mide el tiempo de ejecución para comparar eficiencia y esc
 
 ## 🔨 Compilación
 
-### Versión Secuencial
+### Versión Secuencial (secuencial.c)
+No requiere librerías especiales de paralelismo, solo la librería estándar.
+
+**Con `int` (por defecto):**
 ```bash
-gcc -O2 -o secuencial secuencial.c -lm
+gcc secuencial.c -o secuencial_run
 ```
 
-### OpenMP
+**Con `float`:**
 ```bash
-gcc -O2 -fopenmp -o OMP OMP.c -lm
+gcc secuencial.c -o secuencial_run -DUSE_FLOAT
 ```
 
-### Pthreads
+**Con `double`:**
 ```bash
-gcc -O2 -o pthread pthread.c -lpthread -lm
+gcc secuencial.c -o secuencial_run -DUSE_DOUBLE
 ```
 
-### MPI
+### OpenMP (OMP.c)
+Requiere la bandera `-fopenmp` para habilitar las directivas de hilos del compilador GCC y `-lm` para las funciones matemáticas.
+
+**Con `int` (por defecto):**
 ```bash
-mpicc -O2 -o MPI MPI.c -lm
+gcc OMP.c -o omp_run -fopenmp -lm
 ```
 
-### OpenCL
+**Con `float`:**
 ```bash
-gcc -O2 -o matriz_opencl matriz_opencl.c -lOpenCL -lm
+gcc OMP.c -o omp_run -fopenmp -DUSE_FLOAT -lm
+```
+
+**Con `double`:**
+```bash
+gcc OMP.c -o omp_run -fopenmp -DUSE_DOUBLE -lm
+```
+
+### Pthreads (pthread.c)
+Requiere enlazar explícitamente la librería de hilos nativa de Linux con `-lpthread` y `-lm`.
+
+**Con `int` (por defecto):**
+```bash
+gcc pthread.c -o pthread_run -lpthread -lm
+```
+
+**Con `float`:**
+```bash
+gcc pthread.c -o pthread_run -lpthread -DUSE_FLOAT -lm
+```
+
+**Con `double`:**
+```bash
+gcc pthread.c -o pthread_run -lpthread -DUSE_DOUBLE -lm
+```
+
+### MPI (MPI.c)
+Utiliza el compilador y el entorno de ejecución de tu distribución de MPI (como OpenMPI o MPICH). Requiere enlazar la librería matemática con `-lm`.
+
+**Con `int` (por defecto):**
+```bash
+mpicc MPI.c -o mpi_run -lm
+```
+
+**Con `float`:**
+```bash
+mpicc MPI.c -o mpi_run -DUSE_FLOAT -lm
+```
+
+**Con `double`:**
+```bash
+mpicc MPI.c -o mpi_run -DUSE_DOUBLE -lm
+```
+
+### OpenCL (matriz_opencl.c)
+Requiere tener instalados los SDKs/Drivers de OpenCL de tu hardware (Intel, AMD o NVIDIA) y enlazar la librería con `-lOpenCL`.
+
+**Con `int` (por defecto):**
+```bash
+gcc matriz_opencl.c -o opencl_run -lOpenCL
+```
+
+**Con `float`:**
+```bash
+gcc matriz_opencl.c -o opencl_run -lOpenCL -DUSE_FLOAT
+```
+
+**Con `double`:**
+```bash
+gcc matriz_opencl.c -o opencl_run -lOpenCL -DUSE_DOUBLE
 ```
 
 ## 🚀 Ejecución
 
-Todos los programas aceptan el tamaño de matriz como argumento (por defecto 1024):
-
 ### Secuencial
+**Sintaxis:** `./secuencial_run [N]`
 ```bash
-./secuencial 1024
+./secuencial_run 1024
 ```
 
 ### OpenMP
+**Sintaxis:** `./omp_run [N] [hilos]`
+
+⚠️ **Nota:** El número de hilos debe ser un cuadrado perfecto (4, 9, 16, 25...) debido a la rejilla bidimensional del Algoritmo de Fox.
 ```bash
-./OMP 1024 9
-# Parámetros: ./OMP [tamaño_matriz] [num_threads]
-# num_threads DEBE ser un número cuadrado perfecto (4, 9, 16, 25...)
+./omp_run 1024 9
 ```
 
 ### Pthreads
+**Sintaxis:** `./pthread_run [N] [hilos]`
+
+⚠️ **Nota:** El número de hilos debe ser un cuadrado perfecto (4, 9, 16, 25...).
 ```bash
-./pthread 1024 9
-# Parámetros: ./pthread [tamaño_matriz] [num_threads]
-# num_threads DEBE ser un número cuadrado perfecto
+./pthread_run 1024 4
 ```
 
 ### MPI
+**Sintaxis:** `mpirun -np [procesos] ./mpi_run [N]`
+
+⚠️ **Nota:** El número de procesos debe ser un cuadrado perfecto (4, 9, 16, 25...).
+
+Si el número de procesos excede los núcleos disponibles en tu sistema, usa la flag `--oversubscribe`:
 ```bash
-mpirun -np 9 ./MPI 1024
-# Parámetros: -np [num_procesos] - DEBE ser un número cuadrado perfecto
+mpirun -np 4 ./mpi_run 1024
+```
+
+**Con oversubscribe (para sistemas con menos núcleos):**
+```bash
+mpirun --oversubscribe -np 9 ./mpi_run 1024
 ```
 
 ### OpenCL
+**Sintaxis:** `./opencl_run [N]`
+
+⚠️ **Nota:** El tamaño de la matriz N debe ser un múltiplo estricto de 16 debido al tamaño del bloque local/Tile.
 ```bash
-./matriz_opencl 1024
+./opencl_run 1024
 ```
 
 ## 📊 Parámetros

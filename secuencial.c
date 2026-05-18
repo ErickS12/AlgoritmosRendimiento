@@ -2,52 +2,57 @@
 #include <stdlib.h>
 #include <time.h>
 
+// --- SELECCIÓN DINÁMICA DEL TIPO DE DATO ---
+#if defined(USE_FLOAT)
+    typedef float DTYPE;
+    #define DTYPE_NAME "float"
+#elif defined(USE_DOUBLE)
+    typedef double DTYPE;
+    #define DTYPE_NAME "double"
+#else
+    typedef int DTYPE;
+    #define DTYPE_NAME "int"
+#endif
+
 int main(int argc, char *argv[]) {
-    // Inicializar la semilla para los números aleatorios
     srand((unsigned int)time(NULL));
 
-    // Permite recibir el tamaño N desde la terminal, por defecto usa 1024
+    // N desde terminal
     int N = (argc > 1) ? atoi(argv[1]) : 1024;
     
-    // Reserva de memoria dinámica (arreglo 1D contiguo para mejorar la memoria caché)
-    int *A = (int *)malloc(N * N * sizeof(int));
-    int *B = (int *)malloc(N * N * sizeof(int));
-    int *C = (int *)calloc(N * N, sizeof(int)); // calloc inicializa en 0
+    DTYPE *A = (DTYPE *)malloc(N * N * sizeof(DTYPE));
+    DTYPE *B = (DTYPE *)malloc(N * N * sizeof(DTYPE));
+    DTYPE *C = (DTYPE *)calloc(N * N, sizeof(DTYPE));
     
-    // Llenar matrices con números aleatorios entre 1000 y 2000
     for (int i = 0; i < N * N; i++) {
-        A[i] = 1000 + rand() % 1001;
-        B[i] = 1000 + rand() % 1001;
+        #if defined(USE_FLOAT) || defined(USE_DOUBLE)
+            A[i] = (DTYPE)1000.0 + ((DTYPE)rand() / RAND_MAX) * 1000.0;
+            B[i] = (DTYPE)1000.0 + ((DTYPE)rand() / RAND_MAX) * 1000.0;
+        #else
+            A[i] = (DTYPE)(1000 + rand() % 1001);
+            B[i] = (DTYPE)(1000 + rand() % 1001);
+        #endif
     }
     
-    // Configurar e iniciar el reloj
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
     
-    // --- ALGORITMO SECUENCIAL CLÁSICO (1 Core, 1 Hilo) ---
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            int sum = 0; // Variable temporal para acelerar el cálculo
+            DTYPE sum = 0; 
             for (int k = 0; k < N; k++) {
-                // Notación 1D: Fila i * Ancho N + Columna actual
                 sum += A[i * N + k] * B[k * N + j];
             }
             C[i * N + j] = sum;
         }
     }
-    // ----------------------------------------------------
     
-    // Detener el reloj
     clock_gettime(CLOCK_MONOTONIC, &end);
     double time_taken = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     
-    printf("Tipo de dato usado: int\n");
-    printf("N=%d, Tiempo Secuencial (1 Core): %f segundos\n", N, time_taken);
+    printf("Tipo de dato usado: %s\n", DTYPE_NAME);
+    printf("N=%d, Tiempo Secuencial: %f segundos\n", N, time_taken);
     
-    // Limpiar la memoria RAM
-    free(A);
-    free(B);
-    free(C);
-    
+    free(A); free(B); free(C);
     return 0;
 }
