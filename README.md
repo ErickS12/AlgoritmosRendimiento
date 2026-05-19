@@ -12,7 +12,7 @@ Este proyecto implementa cinco variantes del algoritmo de Fox:
 | **OpenMP**     | Memoria compartida  | Directivas de compilador |
 | **Pthreads**   | Memoria compartida  | Threads POSIX            |
 | **MPI**        | Memoria distribuida | Paso de mensajes, topología 2D|
-| **OpenCL**     | GPU                 | Implementa el tiling dinamicamente
+| **OpenCL**     | GPU                 | Kernels optimizados con tiling 16×16|
 
 Los datos se representan como `int` por defecto, con opciones de compilación para `float` y `double`.
 
