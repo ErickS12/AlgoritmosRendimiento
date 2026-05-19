@@ -1,20 +1,22 @@
 # Benchmark de Multiplicación de Matrices
 
-Proyecto que compara el rendimiento de diferentes paradigmas de paralelismo en la multiplicación de matrices.
+Implementación del algoritmo de Fox para multiplicación de matrices cuadradas (N×N) en diferentes paradigmas de paralelismo, con medición comparativa de rendimiento.
 
-## 📋 Descripción
+## Descripción
 
-Este proyecto implementa la multiplicación de dos matrices cuadradas (N×N) usando distintas estrategias de paralelismo:
+Este proyecto implementa cinco variantes del algoritmo de Fox:
 
-- **Secuencial**: Versión de un único hilo (baseline)
-- **OpenMP (OMP)**: Paralelismo con directivas OpenMP
-- **Pthreads**: Paralelismo con threads POSIX
-- **MPI**: Paralelismo distribuido con Message Passing Interface
-- **OpenCL**: Aceleración GPU
+| Implementación | Modelo              | Características          |
+|----------------|---------------------|--------------------------|
+| **Secuencial** | Línea base          | Un único thread          |
+| **OpenMP**     | Memoria compartida  | Directivas de compilador |
+| **Pthreads**   | Memoria compartida  | Threads POSIX            |
+| **MPI**        | Memoria distribuida | Paso de mensajes, topología 2D|
+| **OpenCL**     | GPU                 | Implementa el tiling dinamicamente
 
-Cada implementación mide el tiempo de ejecución para comparar eficiencia y escalabilidad. En esta versión, las matrices y acumuladores de MPI, OpenMP, Pthreads y la versión secuencial se modificaron de double a int.
+Los datos se representan como `int` por defecto, con opciones de compilación para `float` y `double`.
 
-## 🏗️ Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 .
@@ -23,180 +25,111 @@ Cada implementación mide el tiempo de ejecución para comparar eficiencia y esc
 ├── pthread.c                 # Versión Pthreads
 ├── MPI.c                     # Versión MPI
 ├── matriz_opencl.c           # Versión OpenCL
-├── kernel.cl                 # Kernel GPU para OpenCL
-├── benchmark_gpu             # Script/binary para benchmarks GPU
 └── README.md                 # Este archivo
 ```
 
-## 🔨 Compilación
+## Compilación
 
-### Versión Secuencial (secuencial.c)
-No requiere librerías especiales de paralelismo, solo la librería estándar.
-
-**Con `int` (por defecto):**
+### Secuencial
 ```bash
 gcc secuencial.c -o secuencial_run
-```
-
-**Con `float`:**
-```bash
 gcc secuencial.c -o secuencial_run -DUSE_FLOAT
-```
-
-**Con `double`:**
-```bash
 gcc secuencial.c -o secuencial_run -DUSE_DOUBLE
 ```
 
-### OpenMP (OMP.c)
-Requiere la bandera `-fopenmp` para habilitar las directivas de hilos del compilador GCC y `-lm` para las funciones matemáticas.
-
-**Con `int` (por defecto):**
+### OpenMP
 ```bash
 gcc OMP.c -o omp_run -fopenmp -lm
-```
-
-**Con `float`:**
-```bash
 gcc OMP.c -o omp_run -fopenmp -DUSE_FLOAT -lm
-```
-
-**Con `double`:**
-```bash
 gcc OMP.c -o omp_run -fopenmp -DUSE_DOUBLE -lm
 ```
 
-### Pthreads (pthread.c)
-Requiere enlazar explícitamente la librería de hilos nativa de Linux con `-lpthread` y `-lm`.
-
-**Con `int` (por defecto):**
+### Pthreads
 ```bash
 gcc pthread.c -o pthread_run -lpthread -lm
-```
-
-**Con `float`:**
-```bash
 gcc pthread.c -o pthread_run -lpthread -DUSE_FLOAT -lm
-```
-
-**Con `double`:**
-```bash
 gcc pthread.c -o pthread_run -lpthread -DUSE_DOUBLE -lm
 ```
 
-### MPI (MPI.c)
-Utiliza el compilador y el entorno de ejecución de tu distribución de MPI (como OpenMPI o MPICH). Requiere enlazar la librería matemática con `-lm`.
-
-**Con `int` (por defecto):**
+### MPI
 ```bash
 mpicc MPI.c -o mpi_run -lm
-```
-
-**Con `float`:**
-```bash
 mpicc MPI.c -o mpi_run -DUSE_FLOAT -lm
-```
-
-**Con `double`:**
-```bash
 mpicc MPI.c -o mpi_run -DUSE_DOUBLE -lm
 ```
 
-### OpenCL (matriz_opencl.c)
-Requiere tener instalados los SDKs/Drivers de OpenCL de tu hardware (Intel, AMD o NVIDIA) y enlazar la librería con `-lOpenCL`.
-
-**Con `int` (por defecto):**
+### OpenCL
 ```bash
 gcc matriz_opencl.c -o opencl_run -lOpenCL
-```
-
-**Con `float`:**
-```bash
 gcc matriz_opencl.c -o opencl_run -lOpenCL -DUSE_FLOAT
-```
-
-**Con `double`:**
-```bash
 gcc matriz_opencl.c -o opencl_run -lOpenCL -DUSE_DOUBLE
 ```
 
-## 🚀 Ejecución
+## Ejecución
 
 ### Secuencial
-**Sintaxis:** `./secuencial_run [N]`
 ```bash
+./secuencial_run [N]
 ./secuencial_run 1024
 ```
 
 ### OpenMP
-**Sintaxis:** `./omp_run [N] [hilos]`
-
-⚠️ **Nota:** El número de hilos debe ser un cuadrado perfecto (4, 9, 16, 25...) debido a la rejilla bidimensional del Algoritmo de Fox.
 ```bash
+./omp_run [N] [threads]
 ./omp_run 1024 9
 ```
+El número de threads debe ser un cuadrado perfecto (4, 9, 16, 25, ...).
 
 ### Pthreads
-**Sintaxis:** `./pthread_run [N] [hilos]`
-
-⚠️ **Nota:** El número de hilos debe ser un cuadrado perfecto (4, 9, 16, 25...).
 ```bash
+./pthread_run [N] [threads]
 ./pthread_run 1024 4
 ```
+El número de threads debe ser un cuadrado perfecto.
 
 ### MPI
-**Sintaxis:** `mpirun -np [procesos] ./mpi_run [N]`
-
-⚠️ **Nota:** El número de procesos debe ser un cuadrado perfecto (4, 9, 16, 25...).
-
-Si el número de procesos excede los núcleos disponibles en tu sistema, usa la flag `--oversubscribe`:
 ```bash
+mpirun -np [procesos] ./mpi_run [N]
 mpirun -np 4 ./mpi_run 1024
-```
-
-**Con oversubscribe (para sistemas con menos núcleos):**
-```bash
 mpirun --oversubscribe -np 9 ./mpi_run 1024
 ```
+El número de procesos debe ser un cuadrado perfecto. Usar `--oversubscribe` si el número de procesos excede los núcleos disponibles.
 
 ### OpenCL
-**Sintaxis:** `./opencl_run [N]`
-
-⚠️ **Nota:** El tamaño de la matriz N debe ser un múltiplo estricto de 16 debido al tamaño del bloque local/Tile.
 ```bash
+./opencl_run [N]
 ./opencl_run 1024
 ```
+N debe ser múltiplo de 16 (tamaño del tile).
 
-## 📊 Parámetros
+## Parámetros por Defecto
 
-| Programa | Parámetro 1 | Parámetro 2 |
-|----------|------------|------------|
-| secuencial | Tamaño N (default: 1024) | - |
-| OMP | Tamaño N (default: 1024) | Threads (default: 9) |
-| pthread | Tamaño N (default: 1024) | Threads (default: 4) |
-| MPI | Tamaño N (default: 1024) | Procesos (via mpirun) |
-| matriz_opencl | Tamaño N (default: 1024) | - |
+| Programa | N | Threads |
+|----------|---|---------|
+| secuencial | 1024 | - |
+| OMP | 1024 | 9 |
+| pthread | 1024 | 4 |
+| MPI | 1024 | Configurable vía mpirun |
+| opencl | 1024 | - |
 
-## ⚙️ Requisitos
+## Dependencias
 
-- **GCC** con soporte C99
-- **OpenMP** (libgomp)
-- **libpthread** (POSIX threads)
-- **OpenMPI** o MPICH (para MPI)
-- **OpenCL** (headers y library para GPU)
-- **GNU Make** (opcional, si hay Makefile)
+- GCC con soporte C99
+- OpenMP (libgomp)
+- libpthread
+- OpenMPI o MPICH
+- OpenCL (SDK según GPU: NVIDIA, AMD, Intel)
 
-## 📈 Notas sobre Rendimiento
+## Características Técnicas
 
-- Los algoritmos están optimizados para **cache locality** usando arreglos 1D
-- Las matrices se generan con valores aleatorios enteros entre 1000 y 2000
-- El tiempo se mide usando `clock_gettime(CLOCK_MONOTONIC)` para máxima precisión
-- Para obtener resultados confiables, ejecutar múltiples veces y promediar
+- Tipo de dato: `int` (default), `float`, `double`
+- Matrices de entrada: valores aleatorios en rango [1000, 2000]
+- Medición de tiempo: `clock_gettime(CLOCK_MONOTONIC)`
+- Almacenamiento en memoria: arreglos 1D para optimización de cache
+- Topología MPI/paralela: rejilla 2D (q×q)
+- **OpenCL:** El kernel GPU está incrustado dinámicamente en `matriz_opencl.c`. Implementa tiling 16×16 para optimización de memoria local.
 
-## 📝 Autor
+## Referencias
 
-Códigos de algoritmos y análisis de rendimiento
+Implementación del algoritmo de Fox para multiplicación de matrices distribuida.
 
-## 📄 Licencia
-
-Libre para uso educativo y de investigación
